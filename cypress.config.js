@@ -11,7 +11,7 @@ module.exports = defineConfig({
       //initPlugin(on, config);
       //on("task", percyHealthCheck);
       //return config;
-    }
+    },
     baseUrl: "http://localhost:4200",
     specPattern: "cypress/e2e/**/*.{js,jsx,ts,tsx}",
     excludeSpecPattern: ["**/1-getting-started/*", "**/2-advanced-examples/*"],
