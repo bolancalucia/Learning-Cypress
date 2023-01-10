@@ -1,8 +1,10 @@
 /// <reference types="cypress"/>
 // identifying cypress in intellisense
 
+const { first } = require("rxjs-compat/operator/first");
+
 describe("Our first suite", () => {
-  it("First test", () => {
+  it("Test - Get web element", () => {
     // open Cypress base Url defined in config file
     cy.visit("/");
     // get to the page with input web element
@@ -46,7 +48,7 @@ describe("Our first suite", () => {
     cy.get('[data-cy="imputEmail1"]');
   });
 
-  it("Second test", () => {
+  it("Test - Get by unique identifier", () => {
     cy.visit("/");
     cy.contains("Forms").click();
     cy.contains("Form Layouts").click();
@@ -72,5 +74,105 @@ describe("Our first suite", () => {
     cy.contains("nb-card", "Horizontal form").find("[type='email']");
   });
 
-  it.only("Third test", () => {});
+  it("Test - Then and wrap method", () => {
+    cy.visit("/");
+    cy.contains("Forms").click();
+    cy.contains("Form Layouts").click();
+
+    //cy.contains("nb-card", "Using the Grid")
+    //  .find("[for='inputEmail1']")
+    //  .should("contain", "Email");
+    //cy.contains("nb-card", "Using the Grid")
+    //  .find("[for='inputPassword2']")
+    //  .should("contain", "Password");
+
+    //cy.contains("nb-card", "Basic form")
+    //  .find("[for='exampleInputEmail1']")
+    //  .should("contain", "Email address");
+    //cy.contains("nb-card", "Basic form")
+    //  .find("[for='exampleInputPassword1']")
+    //  .should("contain", "Password");
+
+    // works in selenium but not in cypress
+    //
+    // const firstForm = cy.contains('nb-card','Using the Grid');
+    // firstForm.find('[for='exampleInputEmail1']").should("contain", "Email");
+    // firstForm.find("[for='inputPassword2']").should("contain", "Password");
+
+    // better approach, with then method
+    // JQuery object works only
+    // Assertion = expect (Chai) works with JQuery, should (Cypress) works with Cypress
+    // result of contains is stored in firstForm
+    cy.contains("nb-card", "Using the Grid").then((firstForm) => {
+      const emailLabelFirst = firstForm.find("[for='inputEmail1']").text();
+      const passwordLabelFirst = firstForm
+        .find("[for='inputPassword2']")
+        .text();
+      expect(emailLabelFirst).to.equal("Email");
+      expect(passwordLabelFirst).to.equal("Password");
+
+      cy.contains("nb-card", "Basic form").then((secondForm) => {
+        const emailLabelSecond = secondForm
+          .find('[for="exampleInputEmail1"]')
+          .text();
+        const passwordLabelSecond = secondForm
+          .find("[for='exampleInputPassword1']")
+          .text();
+        //expect(emailLabelSecond).to.equal(emailLabelFirst); FAIL
+        expect(passwordLabelSecond).to.equal(passwordLabelFirst);
+
+        // return to cypress object with wrap method
+        cy.wrap(secondForm)
+          .find("[for='exampleInputPassword1']")
+          .should("contain", "Password");
+      });
+    });
+  });
+
+  it("Test - Invoke command 1", () => {
+    cy.visit("/");
+    cy.contains("Forms").click();
+    cy.contains("Form Layouts").click();
+
+    //1 - Get by unique identifier
+    cy.get('[for="exampleInputEmail1"]').should("contain", "Email address");
+    //2 - Get by then, jQuery object
+    cy.get('[for="exampleInputEmail1"]').then((label) => {
+      expect(label.text()).to.equal("Email address");
+    });
+
+    //3 - Invoke command
+    cy.get('[for="exampleInputEmail1"]')
+      .invoke("text")
+      .then((label) => {
+        expect(label).to.equal("Email address");
+      });
+
+    cy.contains("nb-card", "Basic form")
+      .find("nb-checkbox")
+      .click()
+      .find(".custom-checkbox")
+      .invoke("attr", "class")
+      //.should("contain", "checked");
+      // OR
+      .then((classValue) => {
+        expect(classValue).to.contain("checked");
+      });
+  });
+
+  it.only("Test - Invoke command 2", () => {
+    cy.visit("/");
+    cy.contains("Forms").click();
+    cy.contains("Datepicker").click();
+
+    cy.contains("nb-card", "Common Datepicker")
+      .find("input")
+      .then((input) => {
+        cy.wrap(input).click();
+        cy.get("nb-calendar-day-picker").contains("17").click();
+        cy.wrap(input)
+          .invoke("prop", "value")
+          .should("contain", "Jan 17, 2023");
+      });
+  });
 });
