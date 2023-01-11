@@ -137,17 +137,21 @@ describe("Our first suite", () => {
     //1 - Get by unique identifier
     cy.get('[for="exampleInputEmail1"]').should("contain", "Email address");
     //2 - Get by then, jQuery object
+    // Text jQuery function is called inside then on a jQuery object
     cy.get('[for="exampleInputEmail1"]').then((label) => {
       expect(label.text()).to.equal("Email address");
     });
 
     //3 - Invoke command
+    // Text jQuery function is called by invoke on a Cypress object
     cy.get('[for="exampleInputEmail1"]')
       .invoke("text")
       .then((label) => {
         expect(label).to.equal("Email address");
       });
 
+    // Invoke calls jQuery function on Cypress object
+    // Invoke calls attr function with value class
     cy.contains("nb-card", "Basic form")
       .find("nb-checkbox")
       .click()
@@ -160,11 +164,12 @@ describe("Our first suite", () => {
       });
   });
 
-  it.only("Test - Invoke command 2", () => {
+  it("Test - Invoke command 2", () => {
     cy.visit("/");
     cy.contains("Forms").click();
     cy.contains("Datepicker").click();
 
+    // Invoke calls prop function with value = value
     cy.contains("nb-card", "Common Datepicker")
       .find("input")
       .then((input) => {
@@ -174,5 +179,40 @@ describe("Our first suite", () => {
           .invoke("prop", "value")
           .should("contain", "Jan 17, 2023");
       });
+  });
+
+  it("Test - Radio button", () => {
+    cy.visit("/");
+    cy.contains("Forms").click();
+    cy.contains("Form Layouts").click();
+
+    // Force true - element is hidden but we don't care
+    // Cypress checks visibility by default
+    // first() - Get a first element in an array
+    // check() - Checks only unchecked radio button/checkbox as input element
+    cy.contains("nb-card", "Using the Grid")
+      .find('[type="radio"]')
+      .then((radioButtons) => {
+        cy.wrap(radioButtons)
+          .first()
+          .check({ force: true })
+          .should("be.checked");
+
+        // eq(1) - Get a dom element at specific index in an array
+        cy.wrap(radioButtons).eq(1).check({ force: true });
+
+        cy.wrap(radioButtons).first().should("not.be.checked");
+
+        cy.wrap(radioButtons).eq(2).should("be.disabled");
+      });
+  });
+
+  it.only("Test - Checkboxes", () => {
+    cy.visit("/");
+    cy.contains("Modal & Overlays").click();
+    cy.contains("Toastr").click();
+
+    cy.get('[type="checkbox"]').check({ force: true });
+    cy.get('[type="checkbox"]').eq(0).click({ force: true });
   });
 });
