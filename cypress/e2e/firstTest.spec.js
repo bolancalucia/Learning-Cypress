@@ -207,12 +207,53 @@ describe("Our first suite", () => {
       });
   });
 
-  it.only("Test - Checkboxes", () => {
+  it("Test - Checkboxes", () => {
     cy.visit("/");
     cy.contains("Modal & Overlays").click();
     cy.contains("Toastr").click();
 
     cy.get('[type="checkbox"]').check({ force: true });
     cy.get('[type="checkbox"]').eq(0).click({ force: true });
+  });
+
+  it.only("Test - Dropdown", () => {
+    cy.visit("/");
+    // 1 - Example with only one element
+    // cy.get("nav nb-select").click();
+    // cy.get(".options-list").contains("Dark").click();
+    // Check color and text are changed
+    // cy.get("nav nb-select").should("contain", "Dark");
+    // cy.get("nb-layout-header nav").should(
+    // "have.css",
+    //  "background-color",
+    //  "rgb(34, 43, 69)"
+    //  );
+
+    // 2 - Example with the whole list
+    // each() - goes through list like foreach
+    cy.get("nav nb-select").then((dropdown) => {
+      cy.wrap(dropdown).click();
+      cy.get(".options-list nb-option").each((listItem, index) => {
+        // Save text and color
+        const itemText = listItem.text().trim();
+        const colors = {
+          Light: "rgb(255, 255, 255)",
+          Dark: "rgb(34, 43, 69)",
+          Cosmic: "rgb(50, 50, 89)",
+          Corporate: "rgb(255, 255, 255)",
+        };
+        // Iterate and assert every element
+        cy.wrap(listItem).click();
+        cy.wrap(dropdown).should("contain", itemText);
+        cy.get("nb-layout-header nav").should(
+          "have.css",
+          "background-color",
+          colors[itemText]
+        );
+        if (index < 3) {
+          cy.wrap(dropdown).click();
+        }
+      });
+    });
   });
 });
