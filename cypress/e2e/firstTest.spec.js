@@ -216,7 +216,7 @@ describe("Our first suite", () => {
     cy.get('[type="checkbox"]').eq(0).click({ force: true });
   });
 
-  it.only("Test - Dropdown", () => {
+  it("Test - Dropdown", () => {
     cy.visit("/");
     // 1 - Example with only one element
     // cy.get("nav nb-select").click();
@@ -255,5 +255,43 @@ describe("Our first suite", () => {
         }
       });
     });
+  });
+  it.only("Test - Dropdown toast type", () => {
+    // 1 - Go to dropdown by clicking
+    // 2 - Get dropdown list
+    // 3 - Loop dropdown list and try every option + button
+    // 4 - Get toaster color and list text are correct
+    // 5 - End loop
+    cy.visit("/");
+    cy.contains("nb-menu", "Modal & Overlays").click();
+    cy.contains("Toastr").click();
+    //cy.get("input[name='timeout']").clear().type("5000");
+    cy.contains("Toast type:")
+      .parents("div.form-group")
+      .find("button")
+      .then((dropdownToast) => {
+        cy.wrap(dropdownToast).click();
+        cy.get(".options-list nb-option").each((toastItem, i) => {
+          const toastText = toastItem.text().trim();
+          const colors = {
+            primary: "rgb(51, 102, 255)",
+            success: "rgb(0, 214, 143)",
+            info: "rgb(0, 149, 255)",
+            warning: "rgb(255, 170, 0)",
+            danger: "rgb(255, 61, 113)",
+          };
+          cy.wrap(toastItem).click();
+          cy.wrap(dropdownToast).should("contain", toastText);
+          cy.contains("button", "Show toast").click();
+          cy.get("nb-toast").should(
+            "have.css",
+            "background-color",
+            colors[toastText]
+          );
+          if (i < 4) {
+            cy.wrap(dropdownToast).click();
+          }
+        });
+      });
   });
 });
